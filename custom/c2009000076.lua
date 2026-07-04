@@ -131,7 +131,7 @@ function s.pldofilter(c)
 	return c:IsSetCard(0xda) and c:IsType(TYPE_PENDULUM) and not c:IsForbidden()
 end
 function s.setfilter(c)
-	return c:IsSetCard(0xf2) and c:IsSpell() and c:IsSSetable()
+	return c:IsSetCard(0xf2) and c:IsSpell() and c:IsSSetable() and not c:IsCode(id)
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.CheckPendulumZones(tp)
