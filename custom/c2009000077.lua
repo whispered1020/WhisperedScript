@@ -4,7 +4,7 @@ local s,id=GetID()
 function s.initial_effect(c)
 	--Activate
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_DESTROY)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_DESTROY+CATEGORY_TODECK)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id,EFFECT_COUNT_CODE_OATH)
@@ -18,7 +18,7 @@ function s.filter(c)
 	return c:IsSetCard(0xf2) and c:IsType(TYPE_PENDULUM) and c:IsAbleToHand()
 end
 function s.plfilter(c)
-	return c:IsSetCard(0xf2) and c:IsType(TYPE_PENDULUM)
+	return c:IsSetCard(0xf2) and c:IsType(TYPE_PENDULUM) and not c:IsForbidden()
 end
 function s.filter2(c)
 	return (c:IsSpellTrap() or c:IsType(TYPE_PENDULUM) or c:IsMonster()) and c:IsDestructable()
@@ -38,12 +38,12 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
             if Duel.SelectYesNo(tp,aux.Stringid(id,0)) then
                 Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
                 local dg=Duel.SelectMatchingCard(tp,s.filter2,tp,LOCATION_PZONE,0,1,1,nil)
-                if #dg>0 and Duel.Destroy(dg,REASON_EFFECT)>0 and Duel.CheckPendulumZones(tp) and dg:GetFirst():IsSetCard(0xf2) then
+                if #dg>0 and Duel.Destroy(dg,REASON_EFFECT)>0 and dg:GetFirst():IsSetCard(0xf2) then
                     Duel.BreakEffect()
+                    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SELECT)
                     local sg=Duel.SelectMatchingCard(tp,s.plfilter,tp,LOCATION_DECK,0,1,1,nil)
                     if #sg>0 then
-                        Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)
-                        Duel.MoveToField(sg:GetFirst(),tp,tp,LOCATION_PZONE,POS_FACEUP,true)
+                        Duel.SendtoExtraP(sg:GetFirst(),tp,REASON_EFFECT)
                     end
                 end
             end

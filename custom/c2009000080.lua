@@ -29,24 +29,11 @@ function s.initial_effect(c)
     e2:SetTarget(s.dstg)
     e2:SetOperation(s.dsop)
     c:RegisterEffect(e2)
-    --If this card battles a monster, neither can be destroyed by that battle
-	local e3=Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_FIELD)
-	e3:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
-	e3:SetRange(LOCATION_MZONE)
-	e3:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
-	e3:SetTarget(s.indestg)
-	e3:SetValue(1)
-	c:RegisterEffect(e3)
 end
 
 --
 function s.matfilter(c,val,sc,sumtype,tp)
 	return c:IsType(TYPE_PENDULUM,sc,sumtype,tp)
-end
-function s.indestg(e,c)
-	local handler=e:GetHandler()
-	return c==handler or c==handler:GetBattleTarget()
 end
 --
 function s.spfilter(c,e,tp)

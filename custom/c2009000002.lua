@@ -47,6 +47,7 @@ s.listed_names={id}
 function s.spfilter(c,e,tp,rp)
 	return c:IsRace(RACE_SPELLCASTER) and c:IsAttribute(ATTRIBUTE_DARK) and not c:IsCode(2009000002) 
 	and c:IsType(TYPE_PENDULUM) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and not c:IsLevel(5)
+	and c:IsLevelBelow(6)
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDestructable()
