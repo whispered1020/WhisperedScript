@@ -1,4 +1,5 @@
 --Etherial Magician
+--Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
   c:EnableReviveLimit()
@@ -40,7 +41,7 @@ function s.initial_effect(c)
 	e3:SetTarget(s.pentg)
 	e3:SetOperation(s.penop)
 	c:RegisterEffect(e3)
---Grant piercing to 1 dark spellcaster  monster you control
+--Grant piercing to 1 DARK Spellcaster monster you control
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(id,3))
 	e4:SetCategory(CATEGORY_DESTROY)
@@ -96,7 +97,7 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	if chk==0 then return Duel.CheckPendulumZones(tp) and Duel.IsExistingMatchingCard(s.pendfilter,tp,LOCATION_DECK,0,1,nil)  end
 	if not Duel.CheckPendulumZones(tp) then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)
-	local pg=Duel.SelectMatchingCard(tp,s.penfilter,tp,LOCATION_DECK,0,1,1,nil):GetFirst()
+	local pg=Duel.SelectMatchingCard(tp,s.pendfilter,tp,LOCATION_DECK,0,1,1,nil):GetFirst()
 	if pg then
 		Duel.MoveToField(pg,tp,tp,LOCATION_PZONE,POS_FACEUP,true)
 	end
