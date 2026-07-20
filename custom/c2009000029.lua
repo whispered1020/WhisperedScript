@@ -1,4 +1,5 @@
 --Mediterranian Biome Rose Sprite
+--Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
 --Discard then SSummon
@@ -43,7 +44,7 @@ function s.spfilter(c,e,tp)
 	return c:IsSetCard(0x123) and not c:IsSetCard(0x1123) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsAttackAbove(600)
 end
 function s.disfilter(c,e,tp)
-	return (c:IsSetCard(0xf19) or c:IsSetCard(0x123) or c:IsSetCard(0x1123)) and c:IsDiscardable()
+	return (c:IsSetCard(0xf19) or c:IsSetCard(0x123) or c:IsSetCard(0x1123)) and c:IsDiscardable() and c:IsMonster()
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.IsExistingMatchingCard(s.disfilter,tp,LOCATION_HAND,0,1,nil)
