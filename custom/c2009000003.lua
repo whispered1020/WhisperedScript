@@ -25,7 +25,7 @@ function s.initial_effect(c)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_CHAINING)
 	e2:SetRange(LOCATION_MZONE)
-	e2:SetCountLimit(1,{id,1})
+	e2:SetCountLimit(1)
 	e2:SetCondition(s.condition)
 	e2:SetCost(s.cost)
 	e2:SetTarget(s.target)
@@ -90,7 +90,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,eg,1,0,0)
 end
 function s.pendfilter(c)
-	return c:IsSetCard(SET_MAGICIAN) and c:IsType(TYPE_PENDULUM) and not c:IsForbidden()
+	return c:IsSetCard(SET_MAGICIAN) and c:IsType(TYPE_PENDULUM) and c:IsLevel({4,7}) and not c:IsForbidden()
 end
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.NegateEffect(ev) then
