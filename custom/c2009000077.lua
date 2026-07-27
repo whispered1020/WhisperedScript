@@ -69,7 +69,7 @@ function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsExistingMatchingCard(s.confilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
 function s.spfilter(c)
-	return c:IsSpell() and c:IsSetCard(SET_PENDULUM) and c:IsAbleToHand()
+	return c:IsSpell() and c:IsSetCard(SET_PENDULUM) and c:IsAbleToHand() and not c:IsCode(id)
 end
 
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
