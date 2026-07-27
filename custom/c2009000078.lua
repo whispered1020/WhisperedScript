@@ -3,15 +3,16 @@
 local s,id=GetID()
 function s.initial_effect(c)
 	Pendulum.AddProcedure(c)
-	--Add 1 "Pendulum" Pendulum Monster from your Deck to your hand then discard 1 card
+	--discard 1 "magician" then draw
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
 	e1:SetType(EFFECT_TYPE_IGNITION)
     e1:SetRange(LOCATION_PZONE)
 	e1:SetCountLimit(1,id)
-	e1:SetTarget(s.thtg)
-	e1:SetOperation(s.thop)
+	e1:SetCost(s.drcost)
+	e1:SetTarget(s.drtg)
+	e1:SetOperation(s.drop)
 	c:RegisterEffect(e1)
     --Add a Pendulum Monster from GY to face-up Extra Deck
 	local e2=Effect.CreateEffect(c)
@@ -43,21 +44,20 @@ function s.initial_effect(c)
 end
 
 --
-function s.thfilter(c)
-	return c:IsSetCard(0xf2) and c:IsMonster() and c:IsAbleToHand()
+function s.cfilter(c)
+	return c:IsSetCard(SET_MAGICIAN) and c:IsType(TYPE_PENDULUM) and c:IsDiscardable()
 end
-function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
+function s.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_HAND,0,1,nil) end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	Duel.DiscardHand(tp,s.cfilter,1,1,REASON_COST+REASON_DISCARD)
 end
-function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
-	if #g>0 and Duel.SendtoHand(g,nil,REASON_EFFECT) then
-        Duel.ConfirmCards(1-tp,g)
-        Duel.BreakEffect()
-        Duel.DiscardHand(tp,aux.TRUE,1,1,REASON_EFFECT+REASON_DISCARD)
-	end
+function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
+	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
+end
+function s.drop(e,tp,eg,ep,ev,re,r,rp)
+	Duel.Draw(tp,1,REASON_EFFECT)
 end
 --
 function s.filter(c)

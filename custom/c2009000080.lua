@@ -29,6 +29,19 @@ function s.initial_effect(c)
     e2:SetTarget(s.dstg)
     e2:SetOperation(s.dsop)
     c:RegisterEffect(e2)
+    --Copy the name and effect of another Pendulum Monster
+	local e3=Effect.CreateEffect(c)
+	e3:SetDescription(aux.Stringid(id,2))
+	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+	e3:SetProperty(EFFECT_FLAG_DELAY)
+	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
+	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	e3:SetCountLimit(1,{id,2})
+    e3:SetCondition(function(e) return e:GetHandler():IsSynchroSummoned() end)
+	e3:SetCost(s.copycost)
+	e3:SetTarget(s.copytg)
+	e3:SetOperation(s.copyop)
+	c:RegisterEffect(e3)
 end
 
 --
@@ -81,4 +94,38 @@ function s.dsop(e,tp,eg,ep,ev,re,r,rp)
             Duel.Destroy(dg,REASON_EFFECT)
         end
     end
+end
+--
+function s.copycost(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return e:GetHandler():GetFlagEffect(41209827)==0 end
+	e:GetHandler():RegisterFlagEffect(41209827,RESETS_STANDARD_PHASE_END,0,1)
+end
+function s.copyfilter(c)
+	return c:IsMonster() and not c:IsType(TYPE_TOKEN) and c:IsFaceup()
+    and c:IsType(TYPE_PENDULUM) and c:IsSetCard(0xf2)
+end
+function s.copytg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	local c=e:GetHandler()
+	if chkc then return chkc:IsLocation(LOCATION_MZONE|LOCATION_EXTRA) and s.copyfilter(chkc) and chkc~=c end
+	if chk==0 then return Duel.IsExistingTarget(s.copyfilter,tp,LOCATION_MZONE|LOCATION_EXTRA,0,1,c) end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+	Duel.SelectTarget(tp,s.copyfilter,tp,LOCATION_MZONE|LOCATION_EXTRA,0,1,1,c)
+end
+function s.copyop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	local tc=Duel.GetFirstTarget()
+	if c:IsRelateToEffect(e) and c:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsFaceup() then
+		local code=tc:GetOriginalCode()
+		--This card's name becomes the target's name
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e1:SetCode(EFFECT_CHANGE_CODE)
+		e1:SetValue(code)
+		e1:SetReset(RESETS_STANDARD_PHASE_END)
+		c:RegisterEffect(e1)
+		if not tc:IsType(TYPE_TRAPMONSTER) then
+			c:CopyEffect(code,RESETS_STANDARD_PHASE_END,1)
+		end
+	end
 end

@@ -25,10 +25,10 @@ function s.initial_effect(c)
     e2:SetTarget(s.tgtg)
     e2:SetOperation(s.tgop)
     c:RegisterEffect(e2)
-    --Add 1 "Pendulum" Trap to hand when destroyed
+    --Add 1 Pendulum Monster from GY to hand
     local e3=Effect.CreateEffect(c)
     e3:SetDescription(aux.Stringid(id,2))
-    e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+    e3:SetCategory(CATEGORY_TOHAND)
     e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
     e3:SetProperty(EFFECT_FLAG_DELAY)
     e3:SetCode(EVENT_DESTROYED)
@@ -76,15 +76,15 @@ function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 end
 --
 function s.thfilter2(c)
-    return c:IsSetCard(0xf2) and c:IsSpellTrap() and c:IsAbleToHand()
+    return c:IsType(TYPE_PENDULUM) and c:IsMonster() and c:IsAbleToHand()
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter2,tp,LOCATION_DECK,0,1,nil) end
-    Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
+    if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter2,tp,LOCATION_GRAVE,0,1,nil) end
+    Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_GRAVE)
 end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-    local g=Duel.SelectMatchingCard(tp,s.thfilter2,tp,LOCATION_DECK,0,1,1,nil)
+    local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.thfilter2),tp,LOCATION_GRAVE,0,1,1,nil)
     if #g>0 then
         Duel.SendtoHand(g,nil,REASON_EFFECT)
         Duel.ConfirmCards(1-tp,g)
