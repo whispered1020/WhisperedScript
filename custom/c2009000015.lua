@@ -1,4 +1,5 @@
 --Abyssal Dread Jellyous
+--Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
 	--link summon
@@ -30,7 +31,8 @@ function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk,c)
 	Duel.Remove(g,0,REASON_COST)
 end
 function s.spfilter(c,e,tp)
-	return c:IsRace(RACE_AQUA|RACE_SEASERPENT|RACE_FISH) and not c:IsRace(e:GetLabel()) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
+	return c:IsRace(RACE_AQUA|RACE_SEASERPENT|RACE_FISH) and c:IsLevelBelow(6)
+	and not c:IsRace(e:GetLabel()) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1

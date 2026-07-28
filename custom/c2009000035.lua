@@ -2,48 +2,68 @@
 --Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
-	--Negate an opponent's effect activated in response to the activation of your WATER card or effect
+	--Battle and effect destruction protection
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_CHAIN_SOLVING)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)
-	e1:SetCondition(s.discon)
-	e1:SetOperation(s.disop)
+	e1:SetCondition(s.protcon)
+    e1:SetCost(s.protcost)
+	e1:SetOperation(s.protop)
 	c:RegisterEffect(e1)
-	--Protection when used as material for a water monster
-	local e1=Effect.CreateEffect(c)
-    e1:SetDescription(aux.Stringid(id,1))
-    e1:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_REMOVE)
-    e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
-    e1:SetCode(EVENT_BE_MATERIAL)
-    e1:SetProperty(EFFECT_FLAG_DELAY)
-    e1:SetCountLimit(1,id)
-    e1:SetCondition(s.matcon)
-    e1:SetTarget(s.mattg)
-    e1:SetOperation(s.matop)
-    c:RegisterEffect(e1)
+	--Target Protection when used as material for a water monster
+	local e2=Effect.CreateEffect(c)
+    e2:SetDescription(aux.Stringid(id,1))
+    e2:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_REMOVE)
+    e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+    e2:SetCode(EVENT_BE_MATERIAL)
+    e2:SetProperty(EFFECT_FLAG_DELAY)
+    e2:SetCountLimit(1,id)
+    e2:SetCondition(s.matcon)
+    e2:SetTarget(s.mattg)
+    e2:SetOperation(s.matop)
+    c:RegisterEffect(e2)
 end
 s.listed_series={0xf18}
 
 function s.filter(c,e,tp)
 	return c:IsSetCard(0xf18)
 end
-function s.discon(e,tp,eg,ep,ev,re,r,rp)
+function s.protcon(e,tp,eg,ep,ev,re,r,rp)
 	local ch=Chain.GetCurrentLink()-1
 	return ch>0 and ep==1-tp and re:IsMonsterEffect() and not Duel.HasFlagEffect(tp,id)
-		and Duel.IsChainDisablable(ev) and Chain.IsTriggeringControler(ch,tp)
-		and Chain.IsTriggeringType(ch,TYPE_MONSTER) and Chain.IsTriggeringAttribute(ch,ATTRIBUTE_WATER)
+		and Chain.IsTriggeringControler(ch,tp) and Chain.IsTriggeringType(ch,TYPE_MONSTER)
+        and Chain.IsTriggeringAttribute(ch,ATTRIBUTE_WATER)
 end
-function s.disop(e,tp,eg,ep,ev,re,r,rp)
+function s.protcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then
+		return e:GetHandler():IsDiscardable()
+	end
+	Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
+end
+function s.protop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+    local tc=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_EFFECT):GetHandler()
 	if not Duel.SelectEffectYesNo(tp,c,aux.Stringid(id,2)) then return end
 	Duel.RegisterFlagEffect(tp,id,RESET_PHASE|PHASE_END,0,1)
 	Duel.Hint(HINT_CARD,0,id)
-	if Duel.NegateEffect(ev) then
-		Duel.BreakEffect()
-		Duel.Remove(c,POS_FACEUP,REASON_EFFECT)
+	if tc then
+        --cannot be destroyed by battle
+		local e0a=Effect.CreateEffect(c)
+		e0a:SetType(EFFECT_TYPE_SINGLE)
+		e0a:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
+		e0a:SetValue(1)
+		e0a:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
+		tc:RegisterEffect(e0a)
+		--cannot be destroyed by card effects
+		local e0b=Effect.CreateEffect(c)
+		e0b:SetType(EFFECT_TYPE_SINGLE)
+		e0b:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
+		e0b:SetValue(1)
+		e0b:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
+		tc:RegisterEffect(e0b)
 		--Cannot Special Summon, except Aqua, Sea Serpent or Fish monsters
 		local e1=Effect.CreateEffect(c)
 		e1:SetDescription(aux.Stringid(id,3))

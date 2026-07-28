@@ -2,7 +2,7 @@
 --Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
---link summon
+	--link summon
 	Link.AddProcedure(c,s.matfilter,1,1)
 	c:EnableReviveLimit()
 	--extra summon
@@ -29,7 +29,7 @@ function s.initial_effect(c)
 	--Special summon 1 "Penguin" monster face-down to your field or add it to the hand
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
-	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOHAND)
+	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOHAND+CATEGORY_TOEXTRA)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e3:SetCode(EVENT_PHASE+PHASE_END)
@@ -74,9 +74,10 @@ function s.spfilter(c,e,tp)
 	return c:IsSetCard(SET_PENGUIN) and c:IsMonster() and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and not c:IsLinkMonster()
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	local c=e:GetHandler()
 	local b1=Duel.IsExistingTarget(aux.NecroValleyFilter(s.thfilter),tp,LOCATION_GRAVE|LOCATION_REMOVED,0,1,nil)
 	local b2=Duel.IsExistingMatchingCard(aux.NecroValleyFilter(s.spfilter),tp,LOCATION_GRAVE|LOCATION_REMOVED,0,1,nil,e,tp)
-	if chk==0 then return (Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and b2) or b1 end
+	if chk==0 then return c:IsAbleToExtra() and (Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and b2) or b1 end
 	local op=Duel.SelectEffect(tp,
 		{b1,aux.Stringid(id,3)},
 		{b2,aux.Stringid(id,4)})
@@ -88,20 +89,22 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	end
 end
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	if e:GetLabel()==1 then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-		local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.thfilter),tp,LOCATION_GRAVE|LOCATION_REMOVED,0,1,1,nil)
-		if #g>0 then
+	if Duel.SendtoDeck(e:GetHandler(),nil,SEQ_DECKSHUFFLE,REASON_EFFECT)>0 then
+		if e:GetLabel()==1 then
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+			local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.thfilter),tp,LOCATION_GRAVE|LOCATION_REMOVED,0,1,1,nil)
+			if #g>0 then
 			Duel.SendtoHand(g,nil,REASON_EFFECT)
 			Duel.ConfirmCards(1-tp,g)
-		end
-	else
-		if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-			local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter),tp,LOCATION_GRAVE|LOCATION_REMOVED,0,1,1,nil,e,tp)
-			if #g>0 then
-				Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEDOWN_DEFENSE)
-				Duel.ConfirmCards(1-tp,g)
+			end
+		else
+			if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+				local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter),tp,LOCATION_GRAVE|LOCATION_REMOVED,0,1,1,nil,e,tp)
+				if #g>0 then
+					Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEDOWN_DEFENSE)
+					Duel.ConfirmCards(1-tp,g)
+				end
 			end
 		end
 	end

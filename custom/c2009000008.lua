@@ -13,6 +13,7 @@ function s.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetCountLimit(1,id)
+    e1:SetCondition(function (_,tp) return Duel.IsTurnPlayer(1-tp) end)
 	e1:SetCost(s.cost)
 	e1:SetTarget(s.target)
 	e1:SetOperation(s.operation)
@@ -28,7 +29,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.drtg)
 	e2:SetOperation(s.drop)
 	c:RegisterEffect(e2)
-	--Add 1 "Penguin" to hand
+	--Add 1 Level 3 or lower "Penguin" to hand
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
 	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -129,7 +130,7 @@ function s.drop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- Add 1 "Penguin" monster to hand
 function s.addfilter(c)
-	return c:IsSetCard(SET_PENGUIN) and c:IsMonster() and c:IsAbleToHand()
+	return c:IsSetCard(SET_PENGUIN) and c:IsMonster() and c:IsLevelBelow(3) and c:IsAbleToHand()
 end
 function s.addtarget(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.addfilter,tp,LOCATION_DECK,0,1,nil) end

@@ -5,7 +5,7 @@ function s.initial_effect(c)
 	--Add 1 "Penguin" monster from your Deck to your hand
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_POSITION)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_POSITION+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_CARD_TARGET)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
@@ -30,18 +30,12 @@ s.listed_series={SET_PENGUIN}
 s.listed_names={2009000038,73640163}
 --Add then
 function s.thfilter(c)
-	return c:IsSetCard(SET_PENGUIN) and c:IsAbleToHand() and c:IsMonster()
-end
-function s.th2filter(c)
-	return c:IsCode(73640163) and c:IsAbleToHand()
-end
-function s.setfilter(c)
-	return c:IsFaceup() and c:IsSetCard(0x5a) and c:IsCanTurnSet()
+	return c:IsSetCard(SET_PENGUIN) and c:IsAbleToHand() and c:IsMonster() and not c:IsCode(id)
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	Duel.SetPossibleOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
+	Duel.SetPossibleOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 	Duel.SetPossibleOperationInfo(0,CATEGORY_POSITION,nil,1,0,0)
 end
 function s.thop(e,tp,eg,ep,ev,re,r,rp,chkc)
@@ -52,22 +46,20 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp,chkc)
 		Duel.ConfirmCards(1-tp,g)
 		Duel.ShuffleHand(tp)
 		--flip if a Tuner was added
-		if g:IsType(TYPE_TUNER) and s.setfilter(c) then
-			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)
-			--local fg=Duel.SelectTarget(tp,s.setfilter,tp,LOCATION_MZONE,0,1,1,nil):GetFirst()
-			if c:IsFaceup() and c:IsRelateToEffect(e) then
-				Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
-			end
+		if g:IsType(TYPE_TUNER) and c:IsFaceup() and c:IsRelateToEffect(e) then
+			Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 		end
 		local break_chk=false
-		--Add 1 "Penguin Cleric" if added a non-Tuner
-			if not g:IsType(TYPE_TUNER) then
-				local dg=Duel.SelectMatchingCard(tp,s.th2filter,tp,LOCATION_DECK,0,1,1,nil)
+		--Special Summon if a non-Tuner was added
+		if not g:IsType(TYPE_TUNER) then
+			if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
 				break_chk=true
 				Duel.BreakEffect()
-				Duel.SendtoHand(dg,nil,REASON_EFFECT)
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+				Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEDOWN_DEFENSE)
 			end
-end
+		end
+	end
 end
 --flip and Special Summon token
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
