@@ -17,7 +17,7 @@ function s.initial_effect(c)
     e1:SetTarget(s.thtg)
     e1:SetOperation(s.thop)
     c:RegisterEffect(e1)
-    --send plant/dragon monster to gy
+    --send dragon monster to gy
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,1))
     e2:SetCategory(CATEGORY_TOGRAVE)
@@ -52,10 +52,11 @@ function s.rfilter(c)
 	return (c:IsRace(RACE_PLANT) or c:IsRace(RACE_DRAGON)) and c:IsAbleToRemoveAsCost() and aux.SpElimFilter(c,true)
 end
 function s.tgfilter(c)
-	return c:IsRace(RACE_PLANT) and c:IsAbleToGrave()
+	return c:IsRace(RACE_DRAGON) and c:IsAbleToGrave()
 end
 function s.tgcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.rfilter,tp,LOCATION_MZONE|LOCATION_GRAVE,0,1,nil) end
+	if chk==0 then return Duel.IsExistingMatchingCard(s.rfilter,tp,LOCATION_MZONE|LOCATION_GRAVE,0,1,nil)
+        and Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
 	local g=Duel.SelectMatchingCard(tp,s.rfilter,tp,LOCATION_MZONE|LOCATION_GRAVE,0,1,1,nil)
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
