@@ -12,10 +12,10 @@ function s.initial_effect(c)
 	e1:SetTarget(function(e,tp,eg,ep,ev,re,r,rp,chk) if chk==0 then return true end Duel.SetPossibleOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK|LOCATION_GRAVE) end)
 	e1:SetOperation(s.activate)
 	c:RegisterEffect(e1)
-	--token
+	--treat as tuner
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN+CATEGORY_ATKCHANGE+CATEGORY_DEFCHANGE)
+	e2:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DEFCHANGE)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetRange(LOCATION_SZONE)
@@ -40,37 +40,36 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 end
 --
 function s.tkfilter(c)
-	return c:IsSetCard({SET_ROSE,SET_ROSE_DRAGON}) and c:IsFaceup()
+	return c:IsSetCard({SET_ROSE,SET_ROSE_DRAGON}) and c:IsFaceup() and not c:IsType(TYPE_TUNER)
 end
 function s.tktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and s.tkfilter(chkc) end
-	if chk==0 then return Duel.IsExistingTarget(s.tkfilter,tp,LOCATION_MZONE,0,1,nil)
-	 and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-	 and Duel.IsPlayerCanSpecialSummonMonster(tp,TOKEN_ROSE,0,TYPES_TOKEN,800,800,2,RACE_PLANT,ATTRIBUTE_DARK,POS_FACEUP_ATTACK,tp) end
+	if chk==0 then return Duel.IsExistingTarget(s.tkfilter,tp,LOCATION_MZONE,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATKDEF)
 	Duel.SelectTarget(tp,s.tkfilter,tp,LOCATION_MZONE,0,1,1,nil)
-	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,0)
 end
 function s.tkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
-	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	if not Duel.IsPlayerCanSpecialSummonMonster(tp,TOKEN_ROSE,0,TYPES_TOKEN,800,800,2,RACE_PLANT,ATTRIBUTE_DARK,POS_FACEUP_ATTACK,tp) then return end
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
 		--Halve its ATK/DEF
-		local e1=Effect.CreateEffect(c)
-		e1:SetType(EFFECT_TYPE_SINGLE)
-		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
-		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
-		e1:SetReset(RESET_EVENT|RESETS_STANDARD)
-		e1:SetValue(math.ceil(tc:GetAttack()/2))
-		tc:RegisterEffect(e1)
-		local e2=e1:Clone()
-		e2:SetCode(EFFECT_SET_DEFENSE_FINAL)
-		tc:RegisterEffect(e2)
-		--Summon token
-		local token=Duel.CreateToken(tp,TOKEN_ROSE)
-		Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP_ATTACK)
+		local e0a=Effect.CreateEffect(c)
+		e0a:SetType(EFFECT_TYPE_SINGLE)
+		e0a:SetCode(EFFECT_SET_ATTACK_FINAL)
+		e0a:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e0a:SetReset(RESET_EVENT|RESETS_STANDARD)
+		e0a:SetValue(math.ceil(tc:GetAttack()/2))
+		tc:RegisterEffect(e0a)
+		local e0b=e0a:Clone()
+		e0b:SetCode(EFFECT_SET_DEFENSE_FINAL)
+		tc:RegisterEffect(e0b)
+		--Treated as a Tuner
+		local e0c=Effect.CreateEffect(c)
+		e0c:SetType(EFFECT_TYPE_SINGLE)
+		e0c:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e0c:SetCode(EFFECT_ADD_TYPE)
+		e0c:SetValue(TYPE_TUNER)
+		e0c:SetReset(RESETS_STANDARD_PHASE_END)
+		tc:RegisterEffect(e0c)
 	end
 end
