@@ -96,6 +96,7 @@ function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 end
 --
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
 	return re and re:GetHandler():IsRace(RACE_PLANT) and re:IsMonsterEffect() and re:GetOwner()~=c
 end
 function s.spfilter(c,e,tp,zone)

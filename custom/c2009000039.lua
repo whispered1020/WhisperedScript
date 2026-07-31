@@ -1,4 +1,5 @@
 --Predaplant Triphyovermis
+--Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
 	Pendulum.AddProcedure(c,false)
@@ -132,17 +133,16 @@ function s.pzcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and (r&REASON_FUSION)==REASON_FUSION and rc:IsAttribute(ATTRIBUTE_DARK)
 end
 function s.pzfilter(c)
-	return (c:IsSetCard(SET_PREDAPLANT) and c:IsType(TYPE_PENDULUM)) or (c:IsFaceup() and c:IsSetCard(SET_PREDAPLANT) and c:IsType(TYPE_PENDULUM))
-	and not c:IsForbidden()
+	return c:IsSetCard(SET_PREDAPLANT) and c:IsType(TYPE_PENDULUM) and not c:IsForbidden()
 end
 function s.pztg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.pzfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.pzfilter,tp,LOCATION_GRAVE+LOCATION_EXTRA,0,1,nil)
 		and Duel.CheckPendulumZones(tp) end
 end
 function s.pzop(e,tp,eg,ep,ev,re,r,rp)
 	if not Duel.CheckPendulumZones(tp) then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)
-	local tc=Duel.SelectMatchingCard(tp,s.pzfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,1,nil):GetFirst()
+	local tc=Duel.SelectMatchingCard(tp,s.pzfilter,tp,LOCATION_GRAVE+LOCATION_EXTRA,0,1,1,nil):GetFirst()
 	if tc then
 		Duel.MoveToField(tc,tp,tp,LOCATION_PZONE,POS_FACEUP,true)
 	end

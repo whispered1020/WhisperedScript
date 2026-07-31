@@ -40,13 +40,9 @@ function s.initial_effect(c)
 	e3a:SetOperation(s.ctop)
 	c:RegisterEffect(e3a)
 	local e3b=e3a:Clone()
-	e3b:SetCode(EVENT_TO_GRAVE)
-	e3b:SetCondition(s.ct2con)
+	e3b:SetCode(EVENT_TO_DECK)
+	e3b:SetCondition(s.ct1con)
 	c:RegisterEffect(e3b)
-	local e3c=e3a:Clone()
-	e3c:SetCode(EVENT_TO_DECK)
-	e3a:SetCondition(s.ct1con)
-	c:RegisterEffect(e3c)
 end
 
 --Special Summon
@@ -80,12 +76,8 @@ end
 --Snatch
 function s.ct1con(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsReason(REASON_EFFECT) and c:IsPreviousLocation(LOCATION_ONFIELD)
+	return c:IsLocation(LOCATION_EXTRA) and c:IsFaceup()
 	and Duel.IsExistingMatchingCard(s.ctfilter,tp,0,LOCATION_MZONE,1,nil)
-end
-function s.ct2con(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	return Duel.IsExistingMatchingCard(s.ctfilter,tp,0,LOCATION_MZONE,1,nil)
 end
 function s.ctfilter(c)
 	return c:IsFaceup() and c:GetCounter(COUNTER_PREDATOR)>0 and c:IsControlerCanBeChanged()
