@@ -92,7 +92,7 @@ end
 function s.sp2filter(c,tc,e,tp)
 	local tc=e:GetLabelObject()
 	local ltc=tc:GetLevel()
-	return c:IsLevelBelow(ltc) and c:IsRace(RACE_PLANT) and c:IsCanBeSpecialSummoned(e,0,tp,true,true)
+	return c:IsLevelBelow(ltc) and c:IsRace(RACE_PLANT) and c:IsCanBeSpecialSummoned(e,0,tp,true,true) and not c:IsCode(id)
 end
 function s.sp2tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
