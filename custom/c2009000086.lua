@@ -80,7 +80,7 @@ function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	c:RegisterEffect(e1)
 end
 function s.filter(c,e,tp)
-	return c:IsSetCard(SET_AROMA) and c:IsMonster() and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and (c:IsAttackAbove(1) or c:IsDefenseAbove(1))
+	return c:IsSetCard(SET_AROMA) and c:IsMonster() and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and (c:IsAttackAbove(1000) or c:IsDefenseAbove(1))
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
