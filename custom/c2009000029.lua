@@ -41,7 +41,7 @@ function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	c:RegisterEffect(e1)
 end
 function s.spfilter(c,e,tp)
-	return c:IsSetCard(0x123) and c:IsLevelBelow(4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsAttackAbove(600)
+	return c:IsSetCard(0x123) and c:IsLevelBelow(4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and not c:IsRace(RACE_DRAGON)
 end
 function s.disfilter(c,e,tp)
 	return (c:IsSetCard(0xf19) or c:IsSetCard(0x123) or c:IsSetCard(0x1123)) and c:IsDiscardable() and c:IsMonster()
