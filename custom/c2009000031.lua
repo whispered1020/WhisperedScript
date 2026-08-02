@@ -63,7 +63,7 @@ function s.tgfilter(c)
     return c:IsSetCard(SET_ROSE) and c:IsAbleToGrave() and c:IsMonster()
 end
 function s.lvfilter(c)
-    return c:IsFaceup() and c:IsSetCard(SET_ROSE) and not c:IsSetCard(SET_ROSE_DRAGON) and c:HasLevel()
+    return c:IsFaceup() and c:IsSetCard(SET_ROSE) and not c:IsRace(RACE_DRAGON) and c:HasLevel()
 end
 function s.lvcost(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil) end

@@ -1,4 +1,5 @@
 --Desert Biome Guardian
+--Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
     c:EnableReviveLimit()
@@ -86,7 +87,7 @@ function s.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function s.damop(e,tp,eg,ep,ev,re,r,rp)
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	local val=Duel.GetMatchingGroupCount(s.damfilter,tp,LOCATION_GRAVE,0,nil)*200
+	local val=Duel.GetMatchingGroupCount(s.damfilter,tp,LOCATION_GRAVE,0,nil)*100
 	Duel.Damage(p,val,REASON_EFFECT)
 end
 --Disable SpSummon

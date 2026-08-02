@@ -1,19 +1,21 @@
 --Verdant Rose Leo
+--Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
 	c:EnableReviveLimit()
 	--Synchro Summon procedure
 	Synchro.AddProcedure(c,nil,1,1,Synchro.NonTunerEx(Card.IsRace,RACE_PLANT|RACE_DRAGON),1,99)
-	--to grave
+	--destroy
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_TOGRAVE)
+	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
-	e1:SetCountLimit(1,{id,0})
-	e1:SetTarget(s.tgtg)
-	e1:SetOperation(s.tgop)
+	e1:SetCountLimit(1,id)
+	e1:SetCost(s.dscost)
+	e1:SetTarget(s.dstg)
+	e1:SetOperation(s.dsop)
 	c:RegisterEffect(e1)
 	--Special summon a plant monster
 	local e2=Effect.CreateEffect(c)
@@ -28,24 +30,31 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 
---Send plant monster to gy when it is special summoned
-function s.tgfilter(c)
-	return c:IsRace(RACE_PLANT) and c:IsAbleToGrave()
+--destroy
+function s.dsfilter(c)
+	return c:IsFaceup() and c:IsCode(TOKEN_ROSE) and c:IsDestructable()
 end
-function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
-end
-function s.tgop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
-	local g=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
+function s.dscost(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.dsfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
+	local g=Duel.SelectMatchingCard(tp,s.dsfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 	if #g>0 then
-		Duel.SendtoGrave(g,REASON_EFFECT)
+		Duel.Destroy(g,REASON_COST)
+	end
+end
+function s.dstg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDestructable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
+	local g=Duel.SelectTarget(tp,Card.IsDestructable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
+	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,tp,LOCATION_ONFIELD)
+end
+function s.dsop(e,tp,eg,ep,ev,re,r,rp)
+	local tc=Duel.GetFirstTarget()
+	if #tc>0 then
+		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
 --SSummon 1 "rose" monster from gy
 function s.spfilter(c,e,tp)
-	return c:IsSetCard(0x123) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and not c:IsSetCard(0x1123)
+	return c:IsSetCard(0x123) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and not c:IsRace(RACE_DRAGON)
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE|LOCATION_REMOVED) and chkc:IsControler(tp) end
