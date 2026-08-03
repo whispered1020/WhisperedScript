@@ -2,12 +2,11 @@
 --Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
-    --Treat as Plant and Dragon while on field/GY
+    --Treat as Plant and Dragon
     local e0=Effect.CreateEffect(c)
     e0:SetType(EFFECT_TYPE_SINGLE)
     e0:SetCode(EFFECT_ADD_RACE)
     e0:SetValue(RACE_DRAGON)
-    e0:SetRange(LOCATION_MZONE+LOCATION_GRAVE)
     c:RegisterEffect(e0)
     --add Red Arrows or Rose Avatar
     local e1=Effect.CreateEffect(c)
