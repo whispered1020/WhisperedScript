@@ -7,6 +7,7 @@ function s.initial_effect(c)
     e0:SetType(EFFECT_TYPE_SINGLE)
     e0:SetCode(EFFECT_ADD_RACE)
     e0:SetValue(RACE_DRAGON)
+    e0:SetRange(LOCATION_MZONE+LOCATION_GRAVE)
     c:RegisterEffect(e0)
     --add Red Arrows or Rose Avatar
     local e1=Effect.CreateEffect(c)
@@ -105,5 +106,15 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
     if c:IsRelateToEffect(e) then
         Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
+        --Cannot Special Summon from the Extra Deck, except Synchro monsters
+	    local e0a=Effect.CreateEffect(e:GetHandler())
+	    e0a:SetDescription(aux.Stringid(id,3))
+	    e0a:SetType(EFFECT_TYPE_FIELD)
+	    e0a:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_CLIENT_HINT)
+	    e0a:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
+	    e0a:SetTargetRange(1,0)
+	    e0a:SetTarget(function(_,c) return c:IsLocation(LOCATION_EXTRA) and not c:IsType(TYPE_SYNCHRO) end)
+	    e0a:SetReset(RESET_PHASE|PHASE_END)
+	    Duel.RegisterEffect(e0a,tp)
     end
 end

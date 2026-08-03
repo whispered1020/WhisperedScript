@@ -21,7 +21,6 @@ function s.initial_effect(c)
     e2:SetType(EFFECT_TYPE_IGNITION)
     e2:SetRange(LOCATION_MZONE)
     e2:SetCountLimit(1,{id,1})
-    e2:SetCost(s.lvcost)
     e2:SetTarget(s.lvtg)
     e2:SetOperation(s.lvop)
     c:RegisterEffect(e2)
@@ -65,25 +64,24 @@ end
 function s.lvfilter(c)
     return c:IsFaceup() and c:IsSetCard(SET_ROSE) and not c:IsRace(RACE_DRAGON) and c:HasLevel()
 end
-function s.lvcost(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil) end
+function s.lvtg(e,tp,eg,ep,ev,re,r,rp,chk)
+    if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil)
+        and Duel.IsExistingMatchingCard(s.lvfilter,tp,LOCATION_MZONE,0,1,nil) and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+        and Duel.IsPlayerCanSpecialSummonMonster(tp,TOKEN_ROSE,0,TYPES_TOKEN,800,800,2,RACE_PLANT,ATTRIBUTE_DARK,POS_FACEUP_ATTACK,tp) end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
     local g=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil)
-    Duel.SendtoGrave(g,REASON_COST)
-end
-function s.lvtg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsExistingMatchingCard(s.lvfilter,tp,LOCATION_MZONE,0,1,nil)
-        and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-        and Duel.IsPlayerCanSpecialSummonMonster(tp,TOKEN_ROSE,0,TYPES_TOKEN,800,800,2,RACE_PLANT,ATTRIBUTE_DARK,POS_FACEUP_ATTACK,tp) end
-    Duel.SetOperationInfo(0,CATEGORY_LVCHANGE,nil,1,tp,LOCATION_MZONE)
-    Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,tp,0)
-    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,0)
+    if #g>0 and Duel.SendtoGrave(g,REASON_EFFECT)>0 then
+        Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+        local tg=Duel.SelectTarget(tp,s.lvfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
+        Duel.SetOperationInfo(0,CATEGORY_LVCHANGE,tg,1,tp,LOCATION_MZONE)
+        Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,tp,0)
+        Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,0)
+    end
 end
 function s.lvop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	if not Duel.IsPlayerCanSpecialSummonMonster(tp,TOKEN_ROSE,0,TYPES_TOKEN,800,800,2,RACE_PLANT,ATTRIBUTE_DARK,POS_FACEUP_ATTACK,tp) then return end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
-    local tc=Duel.SelectMatchingCard(tp,s.lvfilter,tp,LOCATION_MZONE,0,1,1,nil):GetFirst()
+    local tc=Duel.GetFirstTarget()
     if tc then
         local lv=Duel.AnnounceNumber(tp,1,2)
         local e1=Effect.CreateEffect(e:GetHandler())

@@ -48,13 +48,14 @@ function s.dstg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 function s.dsop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
-	if #tc>0 then
+	if tc then
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
 --SSummon 1 "rose" monster from gy
 function s.spfilter(c,e,tp)
-	return c:IsSetCard(0x123) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and not c:IsRace(RACE_DRAGON)
+	return c:IsSetCard(0x123) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+		and c:IsLevelBelow(5) and not c:IsRace(RACE_DRAGON)
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE|LOCATION_REMOVED) and chkc:IsControler(tp) end

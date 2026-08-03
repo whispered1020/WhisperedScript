@@ -32,9 +32,9 @@ function s.initial_effect(c)
 	e3:SetCode(EVENT_FREE_CHAIN)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCountLimit(1,{id,1})
-	e3:SetCost(s.descost)
-	e3:SetTarget(s.target)
-	e3:SetOperation(s.operation)
+	e3:SetCost(s.tgcost)
+	e3:SetTarget(s.tgtg)
+	e3:SetOperation(s.tgop)
 	c:RegisterEffect(e3)
 end
 
@@ -61,22 +61,37 @@ function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 --Send to GY
-function s.rfilter(c)
-	return (c:IsRace(RACE_PLANT) or c:IsRace(RACE_DRAGON)) and c:IsAbleToRemoveAsCost() and aux.SpElimFilter(c,true)
+function s.cfilter1(c)
+	return c:IsRace(RACE_PLANT) and c:IsAbleToRemoveAsCost() and aux.SpElimFilter(c,true)
 end
-function s.descost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.rfilter,tp,LOCATION_MZONE|LOCATION_GRAVE,0,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
-	local g=Duel.SelectMatchingCard(tp,s.rfilter,tp,LOCATION_MZONE|LOCATION_GRAVE,0,1,1,nil)
-	Duel.Remove(g,POS_FACEUP,REASON_COST)
+
+function s.cfilter2(c)
+	return c:IsRace(RACE_DRAGON) and c:IsAbleToRemoveAsCost() and aux.SpElimFilter(c,true)
 end
-function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+
+function s.cfilter(c)
+	return (c:IsRace(RACE_PLANT) or c:IsRace(RACE_DRAGON))
+		and c:IsAbleToRemoveAsCost() and aux.SpElimFilter(c,true)
+end
+function s.tgcon(sg,e,tp,mg)
+	return sg:IsExists(Card.IsRace,1,nil,RACE_PLANT)
+		and sg:IsExists(Card.IsRace,1,nil,RACE_DRAGON)
+end
+function s.tgcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	local g=Duel.GetMatchingGroup(s.cfilter,tp,LOCATION_GRAVE,0,nil)
+	if chk==0 then
+		return aux.SelectUnselectGroup(g,e,tp,2,2,s.tgcon,0)
+	end
+	local sg=aux.SelectUnselectGroup(g,e,tp,2,2,s.tgcon,1,tp,HINTMSG_REMOVE,s.tgcon)
+	Duel.Remove(sg,POS_FACEUP,REASON_COST)
+end
+function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToGrave,tp,0,LOCATION_ONFIELD,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
 	local g=Duel.SelectTarget(tp,Card.IsAbleToGrave,tp,0,LOCATION_ONFIELD,1,2,nil)
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,1-tp,LOCATION_ONFIELD)
 end
-function s.operation(e,tp,eg,ep,ev,re,r,rp)
+function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetTargetCards(e)
 	if #g>0 then
 			Duel.HintSelection(g,true)
