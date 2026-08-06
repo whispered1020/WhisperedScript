@@ -33,7 +33,7 @@ function s.initial_effect(c)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetHintTiming(0,TIMING_MAIN_END)
-	e3:SetCountLimit(1,{id,2})
+	e3:SetCountLimit(1)
 	e3:SetCondition(s.ritcon)
 	c:RegisterEffect(e3)
 end
