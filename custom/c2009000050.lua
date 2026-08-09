@@ -1,22 +1,26 @@
 --Sylvan Mikoblessin
+--Scripted by: Whispered
 local s,id=GetID()
 function s.initial_effect(c)
     --Activate
     local e1=Effect.CreateEffect(c)
+    e1:SetDescription(aux.Stringid(id,0))
     e1:SetCategory(CATEGORY_TODECK+CATEGORY_TOGRAVE+CATEGORY_TOHAND+CATEGORY_DECKDES)
     e1:SetType(EFFECT_TYPE_ACTIVATE)
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetProperty(EFFECT_FLAG_DAMAGE_STEP)
-    e1:SetCountLimit(1,id)
+    e1:SetCountLimit(1,id,EFFECT_COUNT_CODE_OATH)
     e1:SetTarget(s.target)
     e1:SetOperation(s.activate)
     c:RegisterEffect(e1)
+    --Add to hand and place on bottom of deck
     local e2=Effect.CreateEffect(c)
+    e2:SetDescription(aux.Stringid(id,1))
     e2:SetCategory(CATEGORY_TODECK+CATEGORY_TOHAND)
     e2:SetType(EFFECT_TYPE_IGNITION)
     e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e2:SetRange(LOCATION_GRAVE)
-    e2:SetCountLimit(1,{id,1})
+    e2:SetCountLimit(1)
     e2:SetCondition(s.thcon)
     e2:SetTarget(s.thtg)
     e2:SetOperation(s.thop)
@@ -24,7 +28,7 @@ function s.initial_effect(c)
 end
 
 function s.sylvanfilter(c)
-    return c:IsSetCard(0x90)
+    return c:IsSetCard(0x90) and c:IsAbleToDeck()
 end
 function s.sylvansfilter(c)
     return c:IsSetCard(0x90) and c:IsMonster()
@@ -40,8 +44,9 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
     local g=Duel.SelectTarget(tp,s.sylvanfilter,tp,LOCATION_GRAVE,0,1,1,nil)
     Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
+    Duel.SetPossibleOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
+    Duel.SetPossibleOperationInfo(0,CATEGORY_DECKDES,nil,1,tp,LOCATION_DECK)
 end
-
 -- helper to get top n cards group (handles short deck)
 function s.get_top_group(tp,n)
     local deckcount=Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)
@@ -49,7 +54,6 @@ function s.get_top_group(tp,n)
     local num=math.min(n,deckcount)
     return Duel.GetDecktopGroup(tp,num)
 end
-
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
     local tc=Duel.GetFirstTarget()
     if not tc or not tc:IsRelateToEffect(e) then return end
@@ -61,29 +65,23 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
     else
         Duel.SendtoDeck(tc,nil,SEQ_DECKBOTTOM,REASON_EFFECT)
     end
-    -- Decide whether player controls a Sylvan Xyz Monster
     local hasXyz=Duel.IsExistingMatchingCard(s.xyzfilter,tp,LOCATION_MZONE,0,1,nil)
-
     if not hasXyz then
-        -- Default: excavate top 1; if it's a Plant monster, add it to hand.
+        --excavate top 1; if it's a Plant monster, add it to hand.
         Duel.ConfirmDecktop(tp,1)
-        --local gtop=s.get_top_group(tp,1)
         local gtop=Duel.GetDecktopGroup(tp,1)
         if gtop:GetCount()==0 then return end
-        Duel.ConfirmCards(1-tp,gtop)
         local tc2=gtop:GetFirst()
         if tc2:IsType(TYPE_MONSTER) and tc2:IsRace(RACE_PLANT) then
             Duel.DisableShuffleCheck()
             Duel.SendtoHand(tc2,nil,REASON_EFFECT)
             Duel.ConfirmCards(1-tp,tc2)
         end
-    else
+    elseif hasXyz and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
         -- If control Sylvan Xyz: excavate top 2, send Plant monsters among them to the GY, place rest on bottom in any order
-        --local gtop=s.get_top_group(tp,2)
         Duel.ConfirmDecktop(tp,2)
         local gtop=Duel.GetDecktopGroup(tp,2)
         if gtop:GetCount()==0 then return end
-        --Duel.ConfirmCards(1-tp,gtop)
         local plantGroup=Group.CreateGroup()
         local nonPlantGroup=Group.CreateGroup()
         local c=gtop:GetFirst()
