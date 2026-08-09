@@ -30,13 +30,9 @@ end
 function s.sylvanfilter(c)
     return c:IsSetCard(0x90) and c:IsAbleToDeck()
 end
-function s.sylvansfilter(c)
-    return c:IsSetCard(0x90) and c:IsMonster()
-end
 function s.xyzfilter(c)
     return c:IsFaceup() and c:IsType(TYPE_XYZ) and c:IsSetCard(0x90)
 end
-
 -- target: 1 "Sylvan" in GY; choose top or bottom placement
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.sylvanfilter(chkc) end
@@ -111,15 +107,18 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
     end
 end
 --Return to hand and to bottom Deck
+function s.thfilter(c)
+    return c:IsSetCard(0x90) and c:IsMonster() and c:IsAbleToHand() and c:IsLevelBelow(5)
+end
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
-    return Duel.IsExistingTarget(s.sylvanfilter,tp,LOCATION_GRAVE,0,5,nil)
+    return Duel.IsExistingTarget(Card.IsSetCard,tp,LOCATION_GRAVE,0,5,nil,0x90)
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-    if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.sylvanfilter(chkc) end
-    if chk==0 then return Duel.IsExistingTarget(s.sylvansfilter,tp,LOCATION_GRAVE,0,1,nil) end
+    if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.thfilter(chkc) end
+    if chk==0 then return Duel.IsExistingTarget(s.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-    local g=Duel.SelectTarget(tp,s.sylvansfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+    local g=Duel.SelectTarget(tp,s.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
     Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
