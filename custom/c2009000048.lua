@@ -60,22 +60,68 @@ function s.excaop(e,tp,eg,ep,ev,re,r,rp)
 		td:Sub(tg)
 	end
 	if #td>0 then
+		Duel.DisableShuffleCheck()
 		Duel.MoveToDeckBottom(td)
 		Duel.SortDeckbottom(tp,tp,#td)
 	end
 end
 --
-function s.spfilter(c)
-	return c:IsXyzSummonable()
+function s.gyfilter(c,e,tp)
+	return c:IsRace(RACE_PLANT) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsCanBeXyzMaterial()
 end
-function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_EXTRA,0,1,nil) end
-	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
+function s.spfilter(c,e,tp)
+	return c:IsRace(RACE_PLANT) and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_XYZ,tp,false,false)
+		and Duel.GetLocationCountFromEx(tp,tp,e:GetHandler(),c)>0
+end
+function s.xyzfilter(c,e,tp,pg,tc,lv)
+	return (#pg<=0 or pg:IsContains(tc)) and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_XYZ,tp,false,false)
+		and Duel.GetLocationCountFromEx(tp,tp,e:GetHandler(),c)>0 and c:IsType(TYPE_XYZ) and c:IsRace(RACE_PLANT)
+		and c:IsRank(lv)
+end
+function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.gyfilter(chkc,e,tp) end
+	if chk==0 then return Duel.IsExistingTarget(s.gyfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp)
+		and Duel.GetMZoneCount(tp)>0 end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	local g=Duel.SelectTarget(tp,s.gyfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
+	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
+	Duel.SetPossibleOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	local sc=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_EXTRA,0,1,1,nil):GetFirst()
-	if sc then
-		Duel.XyzSummon(tp,sc)
+	local c=e:GetHandler()
+	local tc=Duel.GetFirstTarget()
+	if not tc or not tc:IsRelateToEffect(e) then return end
+	if Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)>0 then
+		local lv=tc:GetLevel()
+		if lv<=0 then return end
+		--Return Coryphora to the Extra Deck
+		if Duel.SendtoDeck(c,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)>0 then
+			local pg=aux.GetMustBeMaterialGroup(tp,Group.FromCards(tc),tp,nil,nil,REASON_XYZ)
+			--Find a Plant Xyz whose Rank matches the revived monster's Level
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+			local g=Duel.SelectMatchingCard(tp,s.xyzfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp,pg,tc,lv)
+			local sc=g:GetFirst()
+			if sc then
+				sc:SetMaterial(tc)
+				Duel.Overlay(sc,tc)
+				Duel.SpecialSummon(sc,SUMMON_TYPE_XYZ,tp,tp,false,false,POS_FACEUP)
+				sc:CompleteProcedure()
+				--Destroy it during the End Phase
+				local e0a=Effect.CreateEffect(e:GetHandler())
+				e0a:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+				e0a:SetCode(EVENT_PHASE+PHASE_END)
+				e0a:SetCountLimit(1)
+				e0a:SetLabelObject(sc)
+				e0a:SetOperation(s.desop)
+				Duel.RegisterEffect(e0a,tp)
+			end
+		end
 	end
+end
+function s.desop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetLabelObject()
+	if c and c:IsOnField() then
+		Duel.Destroy(c,REASON_EFFECT)
+	end
+	e:Reset()
 end
